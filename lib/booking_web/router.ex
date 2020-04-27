@@ -19,6 +19,9 @@ defmodule BookingWeb.Router do
     get "/", PageController, :index
   end
 
+  forward "/graphiql", Absinthe.Plug.GraphiQL, schema: Booking.Schema
+  forward "/graphql", Absinthe.Plug, schema: Booking.Schema
+
   # Other scopes may use custom stacks.
   # scope "/api", BookingWeb do
   #   pipe_through :api

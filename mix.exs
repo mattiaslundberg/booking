@@ -43,7 +43,10 @@ defmodule Booking.MixProject do
       {:telemetry_metrics, "~> 0.4"},
       {:telemetry_poller, "~> 0.4"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"}
+      {:plug_cowboy, "~> 2.0"},
+      {:absinthe, "~> 1.5.0-rc.5"},
+      {:absinthe_plug, "~> 1.5.0-rc.2"},
+      {:dataloader, "== 1.0.7"}
     ]
   end
 
