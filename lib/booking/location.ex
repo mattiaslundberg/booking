@@ -5,6 +5,8 @@ defmodule Booking.Location do
   schema "locations" do
     field :name, :string
 
+    has_many :bookables, Booking.Bookable
+
     timestamps()
   end
 

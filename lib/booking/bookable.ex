@@ -6,6 +6,8 @@ defmodule Booking.Bookable do
     field :name, :string
     belongs_to :location, Booking.Location
 
+    has_many :bookings, Booking.Booking
+
     timestamps()
   end
 
