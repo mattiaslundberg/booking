@@ -47,6 +47,16 @@ defmodule Booking.Schema do
 
       resolve(&Bookable.create/3)
     end
+
+    @desc "Create a booking"
+    field :create_booking, type: :booking do
+      arg(:label, non_null(:string))
+      arg(:bookable_id, non_null(:integer))
+      arg(:start, non_null(:datetime))
+      arg(:end, non_null(:datetime))
+
+      resolve(&Booking.create/3)
+    end
   end
 
   def context(ctx) do
