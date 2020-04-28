@@ -26,22 +26,16 @@ defmodule Booking.Schema do
   end
 
   query do
-    field :locations, list_of(:location), resolve: &all_locations/3
+    field :locations, list_of(:location), resolve: &Location.all/3
 
     field :location, :location do
       arg(:id, non_null(:id))
-      resolve(&location/3)
+      resolve(&Location.by_id/3)
     end
   end
 
-  defp all_locations(_, _, _), do: {:ok, Location |> Repo.all()}
-
-  defp location(_, %{id: id}, _), do: {:ok, Location |> Repo.get(id)}
-
-  defp ecto_query(queryable, _params), do: queryable
-
   def context(ctx) do
-    source = Dataloader.Ecto.new(Repo, query: &ecto_query/2)
+    source = Dataloader.Ecto.new(Repo)
 
     loader =
       Dataloader.new()
