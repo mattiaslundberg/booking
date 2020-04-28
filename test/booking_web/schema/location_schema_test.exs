@@ -2,15 +2,14 @@ defmodule BookingWeb.LocationSchemaTest do
   use BookingWeb.ConnCase
   alias Booking.{Location, Repo, Bookable}
 
-  test "non existing", %{conn: conn} do
+  test "non existing" do
     query = "{ location(id: 999) { id } }"
+    {:ok, %{data: data}} = Absinthe.run(query, Booking.Schema)
 
-    res = post(conn, "/graphql", query: query)
-
-    assert json_response(res, 200) == %{"data" => %{"location" => nil}}
+    assert data == %{"location" => nil}
   end
 
-  test "with bookables", %{conn: conn} do
+  test "with bookables" do
     location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
 
     bookable =
@@ -19,14 +18,12 @@ defmodule BookingWeb.LocationSchemaTest do
       |> Repo.insert!()
 
     query = "{ location(id: #{location.id}) { id bookables { id } } }"
-    res = post(conn, "/graphql", query: query)
+    {:ok, %{data: data}} = Absinthe.run(query, Booking.Schema)
 
-    assert json_response(res, 200) == %{
-             "data" => %{
-               "location" => %{
-                 "id" => "#{location.id}",
-                 "bookables" => [%{"id" => "#{bookable.id}"}]
-               }
+    assert data == %{
+             "location" => %{
+               "id" => "#{location.id}",
+               "bookables" => [%{"id" => "#{bookable.id}"}]
              }
            }
   end

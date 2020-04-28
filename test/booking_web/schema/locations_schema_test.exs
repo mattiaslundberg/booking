@@ -1,36 +1,24 @@
 defmodule BookingWeb.LocationsSchemaTest do
   use BookingWeb.ConnCase
-  alias Booking.{Location, Repo, Bookable}
+  alias Booking.{Location, Repo, Bookable, Schema}
 
-  test "empty", %{conn: conn} do
+  test "empty" do
     query = "{ locations { id } }"
+    {:ok, %{data: data}} = Absinthe.run(query, Schema)
 
-    res = post(conn, "/graphql", query: query)
-
-    assert json_response(res, 200) == %{"data" => %{"locations" => []}}
+    assert data == %{"locations" => []}
   end
 
-  test "non empty with id and name", %{conn: conn} do
-    location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
-    query = "{ locations { id name } }"
-    res = post(conn, "/graphql", query: query)
-
-    assert json_response(res, 200) == %{
-             "data" => %{"locations" => [%{"name" => "First", "id" => "#{location.id}"}]}
-           }
-  end
-
-  test "non empty without bookables", %{conn: conn} do
+  test "non empty without bookables" do
     location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
     query = "{ locations { id bookables { id } } }"
-    res = post(conn, "/graphql", query: query)
+    {:ok, %{data: data}} = Absinthe.run(query, Schema)
 
-    assert json_response(res, 200) == %{
-             "data" => %{"locations" => [%{"id" => "#{location.id}", "bookables" => []}]}
-           }
+    assert data ==
+             %{"locations" => [%{"id" => "#{location.id}", "bookables" => []}]}
   end
 
-  test "with bookables", %{conn: conn} do
+  test "with bookables" do
     location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
 
     bookable =
@@ -39,14 +27,23 @@ defmodule BookingWeb.LocationsSchemaTest do
       |> Repo.insert!()
 
     query = "{ locations { id bookables { id } } }"
+
+    {:ok, %{data: data}} = Absinthe.run(query, Schema)
+
+    assert data == %{
+             "locations" => [
+               %{"id" => "#{location.id}", "bookables" => [%{"id" => "#{bookable.id}"}]}
+             ]
+           }
+  end
+
+  test "http non empty with id and name", %{conn: conn} do
+    location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
+    query = "{ locations { id name } }"
     res = post(conn, "/graphql", query: query)
 
     assert json_response(res, 200) == %{
-             "data" => %{
-               "locations" => [
-                 %{"id" => "#{location.id}", "bookables" => [%{"id" => "#{bookable.id}"}]}
-               ]
-             }
+             "data" => %{"locations" => [%{"name" => "First", "id" => "#{location.id}"}]}
            }
   end
 end
