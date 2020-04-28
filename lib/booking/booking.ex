@@ -4,6 +4,9 @@ defmodule Booking.Booking do
 
   schema "bookings" do
     field :label, :string
+    field :start, :utc_datetime
+    field :end, :utc_datetime
+
     belongs_to :bookable, Booking.Bookable
 
     timestamps()
