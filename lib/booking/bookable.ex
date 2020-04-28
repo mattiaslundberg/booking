@@ -14,7 +14,7 @@ defmodule Booking.Bookable do
   @doc false
   def changeset(bookable, attrs) do
     bookable
-    |> cast(attrs, [:name, :location])
-    |> validate_required([:name, :location])
+    |> cast(attrs, [:name, :location_id])
+    |> validate_required([:name, :location_id])
   end
 end
