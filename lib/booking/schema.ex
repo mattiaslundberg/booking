@@ -3,6 +3,8 @@ defmodule Booking.Schema do
   alias Booking.{Location, Bookable, Repo, Booking}
   import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
+  import_types(Absinthe.Type.Custom)
+
   object :location do
     field :id, :id
     field :name, :string
@@ -21,6 +23,9 @@ defmodule Booking.Schema do
   object :booking do
     field :id, :id
     field :label, :string
+
+    field :start, :datetime
+    field :end, :datetime
 
     field :bookable, :bookable, resolve: dataloader(Bookable)
   end
