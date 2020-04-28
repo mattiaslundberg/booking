@@ -1,4 +1,5 @@
 defmodule Booking.Bookable do
+  alias Booking.Repo
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -9,6 +10,10 @@ defmodule Booking.Bookable do
     has_many :bookings, Booking.Booking
 
     timestamps()
+  end
+
+  def create(_parent, args, _resolution) do
+    %__MODULE__{} |> __MODULE__.changeset(args) |> Repo.insert()
   end
 
   @doc false

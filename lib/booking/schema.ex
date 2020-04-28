@@ -39,6 +39,16 @@ defmodule Booking.Schema do
     end
   end
 
+  mutation do
+    @desc "Create a bookable"
+    field :create_bookable, type: :bookable do
+      arg(:name, non_null(:string))
+      arg(:location_id, non_null(:integer))
+
+      resolve(&Bookable.create/3)
+    end
+  end
+
   def context(ctx) do
     source = Dataloader.Ecto.new(Repo)
 
