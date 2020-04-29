@@ -48,6 +48,15 @@ defmodule Booking.Schema do
       resolve(&Bookable.create/3)
     end
 
+    @desc "Update bookable"
+    field :update_bookable, type: :bookable do
+      arg(:id, non_null(:id))
+      arg(:name, non_null(:string))
+      arg(:location_id, non_null(:integer))
+
+      resolve(&Bookable.update/3)
+    end
+
     @desc "Create a booking"
     field :create_booking, type: :booking do
       arg(:label, non_null(:string))
