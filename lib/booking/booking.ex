@@ -17,6 +17,10 @@ defmodule Booking.Booking do
     %__MODULE__{} |> __MODULE__.changeset(args) |> Repo.insert()
   end
 
+  def update(_parent, args = %{id: id}, _resolution) do
+    __MODULE__ |> Repo.get(id) |> __MODULE__.changeset(args) |> Repo.update()
+  end
+
   @doc false
   def changeset(booking, attrs) do
     booking

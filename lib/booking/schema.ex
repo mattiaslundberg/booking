@@ -57,6 +57,17 @@ defmodule Booking.Schema do
 
       resolve(&Booking.create/3)
     end
+
+    @desc "Update booking"
+    field :update_booking, type: :booking do
+      arg(:id, non_null(:id))
+      arg(:label, non_null(:string))
+      arg(:bookable_id, non_null(:integer))
+      arg(:start, non_null(:datetime))
+      arg(:end, non_null(:datetime))
+
+      resolve(&Booking.update/3)
+    end
   end
 
   def context(ctx) do
