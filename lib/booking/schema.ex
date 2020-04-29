@@ -5,6 +5,7 @@ defmodule Booking.Schema do
 
   import_types(Absinthe.Type.Custom)
 
+  @desc "The location where the booking is done, for example restaurant"
   object :location do
     field :id, :id
     field :name, :string
@@ -12,6 +13,7 @@ defmodule Booking.Schema do
     field :bookables, list_of(:bookable), resolve: dataloader(Bookable)
   end
 
+  @desc "The thing that is bookable, for example table at restaurant"
   object :bookable do
     field :id, :id
     field :name, :string
@@ -20,6 +22,7 @@ defmodule Booking.Schema do
     field :location, :location, resolve: dataloader(Location)
   end
 
+  @desc "The specific booking, for example table reservation at 19"
   object :booking do
     field :id, :id
     field :label, :string
@@ -31,8 +34,10 @@ defmodule Booking.Schema do
   end
 
   query do
+    @desc "List the locations"
     field :locations, list_of(:location), resolve: &Location.all/3
 
+    @desc "Get specific location by known id"
     field :location, :location do
       arg(:id, non_null(:id))
       resolve(&Location.by_id/3)
