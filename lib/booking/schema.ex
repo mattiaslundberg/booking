@@ -1,6 +1,6 @@
 defmodule Booking.Schema do
   use Absinthe.Schema
-  alias Booking.{Location, Bookable, Repo, Booking}
+  alias Booking.{Location, Bookable, Repo}
   import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
   import_types(Absinthe.Type.Custom)
@@ -18,7 +18,7 @@ defmodule Booking.Schema do
     field :id, :id
     field :name, :string
 
-    field :bookings, list_of(:booking), resolve: dataloader(Booking)
+    field :bookings, list_of(:booking), resolve: dataloader(Booking.Booking)
     field :location, :location, resolve: dataloader(Location)
   end
 
@@ -69,7 +69,7 @@ defmodule Booking.Schema do
       arg(:start, non_null(:datetime))
       arg(:end, non_null(:datetime))
 
-      resolve(&Booking.create/3)
+      resolve(&Booking.Booking.create/3)
     end
 
     @desc "Update booking"
@@ -80,7 +80,7 @@ defmodule Booking.Schema do
       arg(:start, non_null(:datetime))
       arg(:end, non_null(:datetime))
 
-      resolve(&Booking.update/3)
+      resolve(&Booking.Booking.update/3)
     end
   end
 
@@ -91,10 +91,15 @@ defmodule Booking.Schema do
       Dataloader.new()
       |> Dataloader.add_source(Bookable, source)
       |> Dataloader.add_source(Location, source)
-      |> Dataloader.add_source(Booking, source)
+      |> Dataloader.add_source(Booking.Booking, source)
 
     Map.put(ctx, :loader, loader)
   end
 
   def plugins, do: [Absinthe.Middleware.Dataloader] ++ Absinthe.Plugin.defaults()
+
+  def middleware(middleware, _field, %{identifier: :mutation}),
+    do: middleware ++ [Booking.Middlewares.EctoErrors]
+
+  def middleware(middleware, _field, _object), do: middleware
 end

@@ -47,6 +47,31 @@ defmodule BookingWeb.CreateBookingTest do
             }} = Absinthe.run(query, Booking.Schema)
   end
 
+  test "end before start" do
+    location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
+    {:ok, bookable} = Bookable.create(nil, %{location_id: location.id, name: "Bookable"}, nil)
+
+    start = DateTime.utc_now()
+    stop = DateTime.add(start, -1000)
+
+    query = """
+    mutation {
+      createBooking(bookableId: #{bookable.id}, label:"From graph", start:"#{start}" end:"#{stop}") {
+        label id
+      }
+    }
+    """
+
+    assert {:ok,
+            %{
+              errors: [
+                %{
+                  message: ~S|end: Expected "start" to be before "end".|
+                }
+              ]
+            }} = Absinthe.run(query, Booking.Schema)
+  end
+
   test "create successful" do
     location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
     {:ok, bookable} = Bookable.create(nil, %{location_id: location.id, name: "Bookable"}, nil)
