@@ -1,6 +1,29 @@
 defmodule BookingWeb.Router do
   use BookingWeb, :router
 
+  @spec get_token(Plug.Conn.t()) :: String.t() | nil
+  defp get_token(%{req_headers: headers}),
+    do: headers |> Enum.into(%{}) |> Map.get("x-user-token")
+
+  @spec is_authenticated({:ok | :error, Integer.t() | String.t()}, Plug.Conn.t()) :: Plug.Conn.t()
+  defp is_authenticated({:ok, user_id}, conn) do
+    conn |> assign(:user_id, user_id)
+  end
+
+  defp is_authenticated(_, conn), do: conn
+
+  defp send_response(conn = %{assigns: %{user_id: _id}}), do: conn
+  defp send_response(conn), do: conn |> send_resp(403, "Not accessible") |> halt()
+
+  @spec authenticate_user(Plug.Conn.t(), []) :: Plug.Conn.t()
+  defp authenticate_user(conn, _params) do
+    conn
+    |> get_token()
+    |> (fn t -> Phoenix.Token.verify(BookingWeb.Endpoint, "user_auth", t) end).()
+    |> is_authenticated(conn)
+    |> send_response()
+  end
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -11,6 +34,10 @@ defmodule BookingWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+  end
+
+  pipeline :graphql do
+    plug :authenticate_user
   end
 
   scope "/", BookingWeb do
@@ -25,8 +52,11 @@ defmodule BookingWeb.Router do
     post "/login", BookingWeb.LoginController, :login
   end
 
-  forward "/graphiql", Absinthe.Plug.GraphiQL, schema: Booking.Schema
-  forward "/graphql", Absinthe.Plug, schema: Booking.Schema
+  scope "/" do
+    pipe_through(:graphql)
+    forward "/graphiql", Absinthe.Plug.GraphiQL, schema: Booking.Schema
+    forward "/graphql", Absinthe.Plug, schema: Booking.Schema
+  end
 
   # Other scopes may use custom stacks.
   # scope "/api", BookingWeb do

@@ -97,9 +97,29 @@ defmodule BookingWeb.LocationsSchemaTest do
   end
 
   test "http non empty with id and name", %{conn: conn} do
+    user =
+      %User{}
+      |> User.changeset(%{name: "First", email: "test@example.com", password: "secret"})
+      |> Repo.insert!()
+
     location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
+
+    permission =
+      %Permission{}
+      |> Permission.changeset(%{location_id: location.id, user_id: user.id})
+      |> Repo.insert!()
+
     query = "{ locations { id name } }"
-    res = post(conn, "/graphql", query: query)
+
+    token =
+      conn
+      |> post("/login", %{email: user.email, password: "secret"})
+      |> Map.get(:resp_body)
+      |> Jason.decode!()
+      |> Map.get("token")
+
+    res =
+      conn |> Map.put(:req_headers, [{"x-user-token", token}]) |> post("/graphql", query: query)
 
     assert json_response(res, 200) == %{
              "data" => %{"locations" => [%{"name" => "First", "id" => "#{location.id}"}]}
