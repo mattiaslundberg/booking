@@ -3,7 +3,7 @@ defmodule Booking.User do
   import Ecto.Changeset
   alias Booking.Repo
 
-  @hash_fun :sha3_256
+  @hash_fun :sha256
   @salt_len 16
   @salt_separator "<|>"
 
