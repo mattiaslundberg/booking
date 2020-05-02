@@ -3,12 +3,16 @@ defmodule BookingWeb.LoginControllerTest do
   use BookingWeb.ConnCase
 
   test "Login with valid credentials", %{conn: conn} do
-    %User{}
-    |> User.changeset(%{name: "First", email: "test@example.com", password: "secret"})
-    |> Repo.insert!()
+    %{id: user_id} =
+      %User{}
+      |> User.changeset(%{name: "First", email: "test@example.com", password: "secret"})
+      |> Repo.insert!()
 
     conn = post(conn, "/login", %{email: "test@example.com", password: "secret"})
     assert json_response(conn, 200)
+
+    token = conn.resp_body |> Jason.decode!() |> Map.get("token")
+    assert {:ok, ^user_id} = Phoenix.Token.verify(BookingWeb.Endpoint, "user_auth", token)
   end
 
   test "login with invalid credentials", %{conn: conn} do

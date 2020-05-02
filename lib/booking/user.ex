@@ -24,13 +24,19 @@ defmodule Booking.User do
     |> validate_required([:name, :email])
   end
 
-  @spec validate_password(String.t(), String.t()) :: boolean()
-  def validate_password(email, cleartext) do
+  @spec get_validated_user(String.t(), String.t()) :: {boolean(), %__MODULE__{} | nil}
+  def get_validated_user(email, cleartext) do
     __MODULE__ |> Repo.get_by(email: email) |> check_hash(cleartext)
   end
 
-  @spec check_hash(%__MODULE__{}, String.t()) :: boolean()
-  defp check_hash(%__MODULE__{password: password}, cleartext) do
+  @spec validate_password(String.t(), String.t()) :: boolean()
+  def validate_password(email, cleartext) do
+    {valid?, _user} = get_validated_user(email, cleartext)
+    valid?
+  end
+
+  @spec check_hash(%__MODULE__{}, String.t()) :: {boolean(), %__MODULE__{} | nil}
+  defp check_hash(user = %__MODULE__{password: password}, cleartext) do
     [salt, expected_hash] =
       password
       |> Base.decode64!()
@@ -38,13 +44,13 @@ defmodule Booking.User do
 
     new_hash = :crypto.hash(@hash_fun, salt <> cleartext)
 
-    new_hash == expected_hash
+    {new_hash == expected_hash, user}
   end
 
   defp check_hash(_, cleartext) do
     salt = :crypto.strong_rand_bytes(@salt_len)
     :crypto.hash(@hash_fun, salt <> cleartext)
-    false
+    {false, nil}
   end
 
   @spec hash_password(Ecto.Changeset.t()) :: Ecto.Changeset.t()
