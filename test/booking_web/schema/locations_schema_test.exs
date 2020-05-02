@@ -1,6 +1,6 @@
 defmodule BookingWeb.LocationsSchemaTest do
   use BookingWeb.ConnCase
-  alias Booking.{Location, Repo, Bookable, Schema, Booking}
+  alias Booking.{Location, Repo, Bookable, Schema, Booking, User, Permission}
 
   test "empty" do
     query = "{ locations { id } }"
@@ -35,6 +35,26 @@ defmodule BookingWeb.LocationsSchemaTest do
                %{"id" => "#{location.id}", "bookables" => [%{"id" => "#{bookable.id}"}]}
              ]
            }
+  end
+
+  test "with users" do
+    location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
+    user = %User{} |> User.changeset(%{name: "User", email: "user@example.com"}) |> Repo.insert!()
+
+    %Permission{}
+    |> Permission.changeset(%{user_id: user.id, location_id: location.id})
+    |> Repo.insert!()
+
+    query = "{ locations { id users { email name } } }"
+
+    assert {:ok,
+            %{
+              data: %{
+                "locations" => [
+                  %{"users" => [%{"name" => "User", "email" => "user@example.com"}]}
+                ]
+              }
+            }} = Absinthe.run(query, Schema)
   end
 
   test "with bookings" do

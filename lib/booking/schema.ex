@@ -1,9 +1,18 @@
 defmodule Booking.Schema do
   use Absinthe.Schema
-  alias Booking.{Location, Bookable, Repo}
+  alias Booking.{Location, Bookable, Repo, User}
   import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
   import_types(Absinthe.Type.Custom)
+
+  @desc "User with permission"
+  object :user do
+    field :id, :id
+    field :name, :string
+    field :email, :string
+
+    field :locations, list_of(:location), resolve: dataloader(Location)
+  end
 
   @desc "The location where the booking is done, for example restaurant"
   object :location do
@@ -11,6 +20,7 @@ defmodule Booking.Schema do
     field :name, :string
 
     field :bookables, list_of(:bookable), resolve: dataloader(Bookable)
+    field :users, list_of(:user), resolve: dataloader(User)
   end
 
   @desc "The thing that is bookable, for example table at restaurant"
@@ -91,6 +101,7 @@ defmodule Booking.Schema do
       Dataloader.new()
       |> Dataloader.add_source(Bookable, source)
       |> Dataloader.add_source(Location, source)
+      |> Dataloader.add_source(User, source)
       |> Dataloader.add_source(Booking.Booking, source)
 
     Map.put(ctx, :loader, loader)

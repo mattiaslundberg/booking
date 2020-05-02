@@ -7,6 +7,7 @@ defmodule Booking.Location do
     field :name, :string
 
     has_many :bookables, Booking.Bookable
+    many_to_many :users, Booking.User, join_through: "permissions"
 
     timestamps()
   end
