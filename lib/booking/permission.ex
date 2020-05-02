@@ -4,7 +4,7 @@ defmodule Booking.Permission do
 
   schema "permissions" do
     belongs_to :location, Booking.Location
-    belongs_to :user, User.Location
+    belongs_to :user, Booking.Location
 
     timestamps()
   end
