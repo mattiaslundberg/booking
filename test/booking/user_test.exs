@@ -1,5 +1,5 @@
 defmodule Booking.UserTest do
-  use Booking.DataCase
+  use Booking.DataCase, async: false
   alias Booking.User
   alias Booking.Repo
 
