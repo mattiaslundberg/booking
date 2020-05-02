@@ -3,6 +3,9 @@ defmodule Booking.User do
   import Ecto.Changeset
   alias Booking.Repo
 
+  @hash_fun :sha3_256
+  @salt_len 16
+
   schema "users" do
     field :email, :string
     field :name, :string
@@ -30,23 +33,23 @@ defmodule Booking.User do
     {salt, expected_hash} =
       password
       |> Base.decode64!()
-      |> String.split_at(16)
+      |> String.split_at(@salt_len)
 
-    new_hash = :crypto.hash(:sha3_512, salt <> cleartext)
+    new_hash = :crypto.hash(@hash_fun, salt <> cleartext)
 
     new_hash == expected_hash
   end
 
   defp check_hash(_, cleartext) do
-    salt = :crypto.strong_rand_bytes(16)
-    :crypto.hash(:sha3_512, salt <> cleartext)
+    salt = :crypto.strong_rand_bytes(@salt_len)
+    :crypto.hash(@hash_fun, salt <> cleartext)
     false
   end
 
   @spec hash_password(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   defp hash_password(cs = %{changes: %{password: password}}) do
-    salt = :crypto.strong_rand_bytes(16)
-    hashed = :crypto.hash(:sha3_512, salt <> password)
+    salt = :crypto.strong_rand_bytes(@salt_len)
+    hashed = :crypto.hash(@hash_fun, salt <> password)
 
     stored = (salt <> hashed) |> Base.encode64()
     %{cs | changes: %{cs.changes | password: stored}}
