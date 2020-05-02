@@ -5,6 +5,7 @@ defmodule Booking.User do
 
   @hash_fun :sha3_256
   @salt_len 16
+  @salt_separator "<|>"
 
   schema "users" do
     field :email, :string
@@ -30,10 +31,10 @@ defmodule Booking.User do
 
   @spec check_hash(%__MODULE__{}, String.t()) :: boolean()
   defp check_hash(%__MODULE__{password: password}, cleartext) do
-    {salt, expected_hash} =
+    [salt, expected_hash] =
       password
       |> Base.decode64!()
-      |> String.split_at(@salt_len)
+      |> String.split(@salt_separator, parts: 2)
 
     new_hash = :crypto.hash(@hash_fun, salt <> cleartext)
 
@@ -51,7 +52,7 @@ defmodule Booking.User do
     salt = :crypto.strong_rand_bytes(@salt_len)
     hashed = :crypto.hash(@hash_fun, salt <> password)
 
-    stored = (salt <> hashed) |> Base.encode64()
+    stored = (salt <> @salt_separator <> hashed) |> Base.encode64()
     %{cs | changes: %{cs.changes | password: stored}}
   end
 
