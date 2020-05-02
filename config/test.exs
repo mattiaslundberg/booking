@@ -19,5 +19,7 @@ config :booking, BookingWeb.Endpoint,
   http: [port: 4002],
   server: false
 
+config :booking, hash_fun: :md5
+
 # Print only warnings and errors during test
 config :logger, level: :warn
