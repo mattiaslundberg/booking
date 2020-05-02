@@ -20,10 +20,12 @@ defmodule Booking.User do
     |> validate_required([:name, :email])
   end
 
+  @spec validate_password(String.t(), String.t()) :: boolean()
   def validate_password(email, cleartext) do
     __MODULE__ |> Repo.get_by(email: email) |> check_hash(cleartext)
   end
 
+  @spec check_hash(%__MODULE__{}, String.t()) :: boolean()
   defp check_hash(%__MODULE__{password: password}, cleartext) do
     {salt, expected_hash} =
       password
@@ -41,6 +43,7 @@ defmodule Booking.User do
     false
   end
 
+  @spec hash_password(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   defp hash_password(cs = %{changes: %{password: password}}) do
     salt = :crypto.strong_rand_bytes(16)
     hashed = :crypto.hash(:sha3_512, salt <> password)
