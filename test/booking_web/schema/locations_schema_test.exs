@@ -2,25 +2,40 @@ defmodule BookingWeb.LocationsSchemaTest do
   use BookingWeb.ConnCase
   alias Booking.{Location, Repo, Bookable, Schema, Booking, User, Permission}
 
-  test "empty" do
-    query = "{ locations { id } }"
-    {:ok, %{data: data}} = Absinthe.run(query, Schema)
+  setup do
+    user =
+      %User{}
+      |> User.changeset(%{name: "User", email: "user@example.com", password: "secret"})
+      |> Repo.insert!()
 
-    assert data == %{"locations" => []}
+    location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
+
+    permission =
+      %Permission{}
+      |> Permission.changeset(%{location_id: location.id, user_id: user.id})
+      |> Repo.insert!()
+
+    %{location: location, permission: permission, user: user, conn: build_conn()}
   end
 
-  test "non empty without bookables" do
-    location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
+  test "not including locations without access", %{user: user, location: location} do
+    %Location{} |> Location.changeset(%{name: "Other"}) |> Repo.insert!()
+    query = "{ locations { id } }"
+    {:ok, %{data: data}} = Absinthe.run(query, Schema, context: %{user_id: user.id})
+
+    assert data ==
+             %{"locations" => [%{"id" => "#{location.id}"}]}
+  end
+
+  test "non empty without bookables", %{user: user, location: location} do
     query = "{ locations { id bookables { id } } }"
-    {:ok, %{data: data}} = Absinthe.run(query, Schema)
+    {:ok, %{data: data}} = Absinthe.run(query, Schema, context: %{user_id: user.id})
 
     assert data ==
              %{"locations" => [%{"id" => "#{location.id}", "bookables" => []}]}
   end
 
-  test "with bookables" do
-    location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
-
+  test "with bookables", %{user: user, location: location} do
     bookable =
       %Bookable{}
       |> Bookable.changeset(%{name: "Bookable", location_id: location.id})
@@ -28,7 +43,7 @@ defmodule BookingWeb.LocationsSchemaTest do
 
     query = "{ locations { id bookables { id } } }"
 
-    {:ok, %{data: data}} = Absinthe.run(query, Schema)
+    {:ok, %{data: data}} = Absinthe.run(query, Schema, context: %{user_id: user.id})
 
     assert data == %{
              "locations" => [
@@ -37,14 +52,7 @@ defmodule BookingWeb.LocationsSchemaTest do
            }
   end
 
-  test "with users" do
-    location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
-    user = %User{} |> User.changeset(%{name: "User", email: "user@example.com"}) |> Repo.insert!()
-
-    %Permission{}
-    |> Permission.changeset(%{user_id: user.id, location_id: location.id})
-    |> Repo.insert!()
-
+  test "with users", %{user: user} do
     query = "{ locations { id users { email name } } }"
 
     assert {:ok,
@@ -54,12 +62,10 @@ defmodule BookingWeb.LocationsSchemaTest do
                   %{"users" => [%{"name" => "User", "email" => "user@example.com"}]}
                 ]
               }
-            }} = Absinthe.run(query, Schema)
+            }} = Absinthe.run(query, Schema, context: %{user_id: user.id})
   end
 
-  test "with bookings" do
-    location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
-
+  test "with bookings", %{user: user, location: location} do
     bookable =
       %Bookable{}
       |> Bookable.changeset(%{name: "Bookable", location_id: location.id})
@@ -77,7 +83,7 @@ defmodule BookingWeb.LocationsSchemaTest do
 
     query = "{ locations { id bookables { id bookings { id label } } } }"
 
-    {:ok, %{data: data}} = Absinthe.run(query, Schema)
+    {:ok, %{data: data}} = Absinthe.run(query, Schema, context: %{user_id: user.id})
 
     assert data == %{
              "locations" => [
@@ -96,26 +102,15 @@ defmodule BookingWeb.LocationsSchemaTest do
            }
   end
 
-  test "http non empty with id and name", %{conn: conn} do
-    user =
-      %User{}
-      |> User.changeset(%{name: "First", email: "test@example.com", password: "secret"})
-      |> Repo.insert!()
-
-    location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
-
-    %Permission{}
-    |> Permission.changeset(%{location_id: location.id, user_id: user.id})
-    |> Repo.insert!()
-
-    query = "{ locations { id name } }"
-
+  test "http non empty with id and name", %{conn: conn, user: user, location: location} do
     token =
       conn
       |> post("/login", %{email: user.email, password: "secret"})
       |> Map.get(:resp_body)
       |> Jason.decode!()
       |> Map.get("token")
+
+    query = "{ locations { id name } }"
 
     res =
       conn |> Map.put(:req_headers, [{"x-user-token", token}]) |> post("/graphql", query: query)
