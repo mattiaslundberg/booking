@@ -6,7 +6,7 @@ defmodule Booking.Middlewares.EctoErrors do
   end
 
   @spec handle_error(Ecto.Changeset.t()) :: list(String.t())
-  defp handle_error(%Ecto.Changeset{} = changeset) do
+  defp handle_error(changeset = %Ecto.Changeset{}) do
     changeset
     |> Ecto.Changeset.traverse_errors(fn {err, _opts} -> err end)
     |> Enum.map(fn {k, v} -> "#{k}: #{v}" end)
