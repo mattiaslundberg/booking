@@ -47,7 +47,8 @@ defmodule Booking.MixProject do
       {:absinthe, "~> 1.5.0-rc.5"},
       {:absinthe_plug, "~> 1.5.0-rc.2"},
       {:dataloader, "== 1.0.7"},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:credo, "~> 1.2", only: [:dev, :test], runtime: false}
     ]
   end
 
