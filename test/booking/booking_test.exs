@@ -55,7 +55,7 @@ defmodule Booking.BookingTest do
     changeset =
       %Booking{label: "Booking", bookable_id: 3, start: now, end: now}
       |> Booking.changeset(%{
-        start: DateTime.add(now, 10000)
+        start: DateTime.add(now, 10_000)
       })
 
     refute changeset.valid?
@@ -67,7 +67,7 @@ defmodule Booking.BookingTest do
     changeset =
       %Booking{label: "Booking", bookable_id: 3, start: now, end: now}
       |> Booking.changeset(%{
-        end: DateTime.add(now, -10000)
+        end: DateTime.add(now, -10_000)
       })
 
     refute changeset.valid?
