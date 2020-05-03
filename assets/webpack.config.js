@@ -16,12 +16,15 @@ module.exports = (env, options) => {
       ]
     },
     entry: {
-      'app': glob.sync('./vendor/**/*.js').concat(['./js/app.js'])
+      'app': glob.sync('./vendor/**/*.js').concat(['./js/app.ts'])
     },
     output: {
       filename: '[name].js',
       path: path.resolve(__dirname, '../priv/static/js'),
       publicPath: '/js/'
+    },
+    resolve: {
+      extensions: [ '.tsx', '.ts', '.js' ],
     },
     devtool: devMode ? 'source-map' : undefined,
     module: {
@@ -40,6 +43,11 @@ module.exports = (env, options) => {
             'css-loader',
             'sass-loader',
           ],
+        },
+        {
+          test: /\.tsx?$/,
+          use: 'ts-loader',
+          exclude: /node_modules/,
         }
       ]
     },
