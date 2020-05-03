@@ -16,6 +16,24 @@ defmodule Booking.User do
     timestamps()
   end
 
+  def create(_parent, args = %{location_id: location_id}, res) do
+    Booking.Location.by_id(nil, %{id: location_id}, res) |> do_create(args)
+  end
+
+  defp do_create({:ok, location}, args) do
+    Repo.transaction(fn ->
+      {:ok, user} =
+        %__MODULE__{} |> __MODULE__.changeset(%{args | location_id: location.id}) |> Repo.insert()
+
+      {:ok, _permission} =
+        %Booking.Permission{}
+        |> Booking.Permission.changeset(%{location_id: location.id, user_id: user.id})
+        |> Repo.insert()
+
+      user
+    end)
+  end
+
   @doc false
   def changeset(user, attrs) do
     user

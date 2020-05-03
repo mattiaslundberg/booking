@@ -55,6 +55,16 @@ defmodule Booking.Schema do
   end
 
   mutation do
+    @desc "Create user"
+    field :create_user, type: :user do
+      arg(:name, non_null(:string))
+      arg(:email, non_null(:string))
+      arg(:password, non_null(:string))
+      arg(:location_id, non_null(:integer))
+
+      resolve(&User.create/3)
+    end
+
     @desc "Create a bookable"
     field :create_bookable, type: :bookable do
       arg(:name, non_null(:string))
