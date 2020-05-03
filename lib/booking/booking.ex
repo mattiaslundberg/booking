@@ -3,6 +3,10 @@ defmodule Booking.Booking do
   import Ecto.Changeset
   alias Booking.{Repo, Bookable}
 
+  @moduledoc """
+  A specific booking with start and end time
+  """
+
   schema "bookings" do
     field :label, :string
     field :start, :utc_datetime

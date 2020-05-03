@@ -2,6 +2,10 @@ defmodule Booking.Permission do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @moduledoc """
+  Relation to assign user permission to a location
+  """
+
   schema "permissions" do
     belongs_to :location, Booking.Location
     belongs_to :user, Booking.Location

@@ -3,6 +3,10 @@ defmodule Booking.User do
   import Ecto.Changeset
   alias Booking.Repo
 
+  @moduledoc """
+  Representation of user in the system
+  """
+
   @hash_fun Application.get_env(:booking, :hash_fun)
   @salt_len 16
   @salt_separator "<|>"

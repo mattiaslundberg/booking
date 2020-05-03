@@ -4,6 +4,10 @@ defmodule Booking.Location do
   import Ecto.Query
   alias Booking.Repo
 
+  @moduledoc """
+  Location, keeps a list of bookables and is the entity to which access is given
+  """
+
   schema "locations" do
     field :name, :string
 

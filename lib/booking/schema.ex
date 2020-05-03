@@ -3,6 +3,10 @@ defmodule Booking.Schema do
   alias Booking.{Location, Bookable, Repo, User}
   import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
+  @moduledoc """
+  Main absinthe schema
+  """
+
   import_types(Absinthe.Type.Custom)
 
   @desc "User with permission"

@@ -4,6 +4,10 @@ defmodule Booking.Bookable do
   import Ecto.Changeset
   import Ecto.Query
 
+  @moduledoc """
+  Bookable, something that can be booked
+  """
+
   schema "bookables" do
     field :name, :string
     belongs_to :location, Booking.Location

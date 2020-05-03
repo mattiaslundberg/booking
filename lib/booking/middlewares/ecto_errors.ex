@@ -1,4 +1,8 @@
 defmodule Booking.Middlewares.EctoErrors do
+  @moduledoc """
+  Transform ecto errors into something absinthe can render for the user
+  """
+
   @behaviour Absinthe.Middleware
   @impl true
   def call(resolution, _) do
