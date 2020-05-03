@@ -1,10 +1,24 @@
 defmodule BookingWeb.CreateBookableTest do
   use BookingWeb.ConnCase
-  alias Booking.{Location, Repo, Bookable}
+  alias Booking.{Location, Repo, Bookable, User, Permission}
 
-  test "create successful" do
+  setup do
+    user =
+      %User{}
+      |> User.changeset(%{name: "User", email: "user@example.com", password: "secret"})
+      |> Repo.insert!()
+
     location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
 
+    permission =
+      %Permission{}
+      |> Permission.changeset(%{location_id: location.id, user_id: user.id})
+      |> Repo.insert!()
+
+    %{location: location, permission: permission, user: user, conn: build_conn()}
+  end
+
+  test "create successful", %{location: location, user: user} do
     query = """
     mutation {
       createBookable(locationId: #{location.id}, name:"From graph") {
@@ -13,7 +27,8 @@ defmodule BookingWeb.CreateBookableTest do
     }
     """
 
-    {:ok, %{data: %{"createBookable" => bookable}}} = Absinthe.run(query, Booking.Schema)
+    {:ok, %{data: %{"createBookable" => bookable}}} =
+      Absinthe.run(query, Booking.Schema, context: %{user_id: user.id})
 
     assert Map.get(bookable, "name") == "From graph"
 

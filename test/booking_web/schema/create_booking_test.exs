@@ -1,8 +1,35 @@
 defmodule BookingWeb.CreateBookingTest do
   use BookingWeb.ConnCase
-  alias Booking.{Location, Repo, Bookable}
+  alias Booking.{Location, Repo, Bookable, User, Permission}
 
-  test "missing bookable" do
+  setup do
+    user =
+      %User{}
+      |> User.changeset(%{name: "User", email: "user@example.com", password: "secret"})
+      |> Repo.insert!()
+
+    location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
+
+    permission =
+      %Permission{}
+      |> Permission.changeset(%{location_id: location.id, user_id: user.id})
+      |> Repo.insert!()
+
+    {:ok, bookable} =
+      Bookable.create(nil, %{location_id: location.id, name: "Bookable"}, %{
+        context: %{user_id: user.id}
+      })
+
+    %{
+      bookable: bookable,
+      location: location,
+      permission: permission,
+      user: user,
+      conn: build_conn()
+    }
+  end
+
+  test "missing bookable", %{user: user} do
     now = DateTime.utc_now()
 
     query = """
@@ -20,13 +47,10 @@ defmodule BookingWeb.CreateBookingTest do
                   message: "In argument \"bookableId\": Expected type \"Int!\", found null."
                 }
               ]
-            }} = Absinthe.run(query, Booking.Schema)
+            }} = Absinthe.run(query, Booking.Schema, context: %{user_id: user.id})
   end
 
-  test "invalid date" do
-    location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
-    {:ok, bookable} = Bookable.create(nil, %{location_id: location.id, name: "Bookable"}, nil)
-
+  test "invalid date", %{user: user, bookable: bookable} do
     now = DateTime.utc_now()
 
     query = """
@@ -44,13 +68,10 @@ defmodule BookingWeb.CreateBookingTest do
                   message: "Argument \"start\" has invalid value \"notdate\"."
                 }
               ]
-            }} = Absinthe.run(query, Booking.Schema)
+            }} = Absinthe.run(query, Booking.Schema, context: %{user_id: user.id})
   end
 
-  test "end before start" do
-    location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
-    {:ok, bookable} = Bookable.create(nil, %{location_id: location.id, name: "Bookable"}, nil)
-
+  test "end before start", %{user: user, bookable: bookable} do
     start = DateTime.utc_now()
     stop = DateTime.add(start, -1000)
 
@@ -69,13 +90,10 @@ defmodule BookingWeb.CreateBookingTest do
                   message: ~S|end: Expected "start" to be before "end".|
                 }
               ]
-            }} = Absinthe.run(query, Booking.Schema)
+            }} = Absinthe.run(query, Booking.Schema, context: %{user_id: user.id})
   end
 
-  test "create successful" do
-    location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
-    {:ok, bookable} = Bookable.create(nil, %{location_id: location.id, name: "Bookable"}, nil)
-
+  test "create successful", %{user: user, bookable: bookable} do
     now = DateTime.utc_now()
 
     query = """
@@ -87,6 +105,6 @@ defmodule BookingWeb.CreateBookingTest do
     """
 
     assert {:ok, %{data: %{"createBooking" => %{"label" => "From graph"}}}} =
-             Absinthe.run(query, Booking.Schema)
+             Absinthe.run(query, Booking.Schema, context: %{user_id: user.id})
   end
 end
