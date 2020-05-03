@@ -1,8 +1,26 @@
-export const createElement = (
+export function createElement(
+  elementType: "input",
+  parent: Element,
+  attrs: Record<string, string>
+): HTMLInputElement;
+
+export function createElement(
+  elementType: "select",
+  parent: Element,
+  attrs: Record<string, string>
+): HTMLSelectElement;
+
+export function createElement(
   elementType: string,
   parent: Element,
   attrs: Record<string, string>
-): Element => {
+): Element;
+
+export function createElement(
+  elementType: string,
+  parent: Element,
+  attrs: Record<string, string>
+): Element {
   const elm = document.createElement(elementType);
   parent.appendChild(elm);
 
