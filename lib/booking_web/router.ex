@@ -5,7 +5,7 @@ defmodule BookingWeb.Router do
   defp get_token(%{req_headers: headers}),
     do: headers |> Enum.into(%{}) |> Map.get("x-user-token")
 
-  @spec is_authenticated({:ok | :error, Integer.t() | String.t()}, Plug.Conn.t()) :: Plug.Conn.t()
+  @spec is_authenticated({:ok | :error, Integer | String.t()}, Plug.Conn.t()) :: Plug.Conn.t()
   defp is_authenticated({:ok, user_id}, conn) do
     conn |> assign(:user_id, user_id)
   end
