@@ -23,7 +23,14 @@ defmodule Booking.Location do
 
   def all(_, _, _), do: {:ok, []}
 
-  def by_id(_, %{id: id}, _), do: {:ok, __MODULE__ |> Repo.get(id)}
+  def by_id(_, %{id: id}, %{context: %{user_id: user_id}}),
+    do:
+      {:ok,
+       __MODULE__
+       |> join(:inner, [l], p in Booking.Permission, on: l.id == p.location_id)
+       |> where([l, p], p.user_id == ^user_id)
+       |> Repo.get(id)}
+
   def by_id(_, _, _), do: {:ok, nil}
 
   @doc false
