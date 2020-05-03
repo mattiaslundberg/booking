@@ -33,4 +33,8 @@ export function createElement(
   });
 
   return elm;
-};
+}
+
+export function clearElement(el: Element) {
+  el.innerHTML = "";
+}

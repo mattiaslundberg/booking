@@ -11,8 +11,8 @@ export const renderLogin = (parent: Element): Promise<string> => {
     type: "password",
     name: "password",
   });
-  createElement("button", form, { text: "Login" });
 
+  createElement("button", form, { text: "Login" });
   return new Promise(async (resolve) => {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();

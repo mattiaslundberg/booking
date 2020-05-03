@@ -17,7 +17,7 @@ export const fetchJson = async (
 export const queryGraph = async (
   token: string,
   query: string
-): Promise<Record<string, string>> => {
+): Promise<Record<string, any>> => {
   return (
     await fetch("/graphql", {
       method: "POST",
