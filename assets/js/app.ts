@@ -4,18 +4,18 @@ import { renderLogin } from "./login";
 import { getToken, saveToken } from "./storage_helpers";
 import { queryGraph } from "./http_helpers";
 import { createElement, clearElement } from "./dom_helpers";
+import { renderLocation } from "./location";
 
 interface Location {
   id: number;
   name: string;
 }
 
-const renderLocation = (locationId: string, parent: Element) => {
-  clearElement(parent);
-  createElement("div", parent, { text: `Selected location ${locationId}` });
-};
-
-const renderLocationSelector = (parent: Element, locations: Location[]) => {
+const renderLocationSelector = (
+  token: string,
+  parent: Element,
+  locations: Location[]
+) => {
   clearElement(parent);
   const selector = createElement("select", parent, {});
   const locationContainer = createElement("div", parent, {
@@ -27,10 +27,10 @@ const renderLocationSelector = (parent: Element, locations: Location[]) => {
   });
 
   selector.addEventListener("change", () => {
-    renderLocation(selector.value, locationContainer);
+    renderLocation(selector.value, locationContainer, token);
   });
 
-  renderLocation(selector.value, locationContainer);
+  renderLocation(selector.value, locationContainer, token);
 };
 
 const renderApp = async (parent: Element, token: string) => {
@@ -39,7 +39,7 @@ const renderApp = async (parent: Element, token: string) => {
     "query { locations { id name } }"
   );
   const locations: Location[] = locationData.data.locations;
-  renderLocationSelector(parent, locations);
+  renderLocationSelector(token, parent, locations);
 };
 
 const main = async () => {
