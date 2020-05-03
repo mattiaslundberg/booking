@@ -1,7 +1,6 @@
 defmodule Booking.Bookable do
   alias Booking.Repo
   use Ecto.Schema
-  import Ecto.Query
   import Ecto.Changeset
 
   schema "bookables" do
@@ -13,12 +12,8 @@ defmodule Booking.Bookable do
     timestamps()
   end
 
-  def create(_parent, args = %{location_id: location_id}, %{context: %{user_id: user_id}}) do
-    location =
-      Booking.Location
-      |> join(:inner, [l], p in Booking.Permission, on: l.id == p.location_id)
-      |> where([l, p], p.user_id == ^user_id)
-      |> Repo.get(location_id)
+  def create(_parent, args = %{location_id: location_id}, res) do
+    {:ok, location} = Booking.Location.by_id(nil, %{id: location_id}, res)
 
     do_create(args, location)
   end
@@ -31,10 +26,16 @@ defmodule Booking.Bookable do
 
   defp do_create(_, _), do: {:error, :denied}
 
-  def update(_parent, args = %{id: id}, _resolution) do
-    __MODULE__ |> Repo.get(id) |> __MODULE__.changeset(args) |> Repo.update()
+  def update(_parent, args = %{id: id, location_id: location_id}, res) do
+    {:ok, location} = Booking.Location.by_id(nil, %{id: location_id}, res)
+
+    __MODULE__
+    |> Repo.get(id)
+    |> __MODULE__.changeset(%{args | location_id: location.id})
+    |> Repo.update()
   end
 
+  def update(_, _, _), do: {:error, :denied}
   @doc false
   def changeset(bookable, attrs) do
     bookable
