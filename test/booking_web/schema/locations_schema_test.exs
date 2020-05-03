@@ -104,10 +104,9 @@ defmodule BookingWeb.LocationsSchemaTest do
 
     location = %Location{} |> Location.changeset(%{name: "First"}) |> Repo.insert!()
 
-    permission =
-      %Permission{}
-      |> Permission.changeset(%{location_id: location.id, user_id: user.id})
-      |> Repo.insert!()
+    %Permission{}
+    |> Permission.changeset(%{location_id: location.id, user_id: user.id})
+    |> Repo.insert!()
 
     query = "{ locations { id name } }"
 
