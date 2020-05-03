@@ -13,23 +13,20 @@ defmodule Booking.Location do
     timestamps()
   end
 
+  defp base_query(user_id) do
+    __MODULE__
+    |> join(:inner, [l], p in Booking.Permission, on: l.id == p.location_id)
+    |> where([l, p], p.user_id == ^user_id)
+  end
+
   def all(_, _, %{context: %{user_id: user_id}}) do
-    {:ok,
-     __MODULE__
-     |> join(:inner, [l], p in Booking.Permission, on: l.id == p.location_id)
-     |> where([l, p], p.user_id == ^user_id)
-     |> Repo.all()}
+    {:ok, base_query(user_id) |> Repo.all()}
   end
 
   def all(_, _, _), do: {:ok, []}
 
   def by_id(_, %{id: id}, %{context: %{user_id: user_id}}),
-    do:
-      {:ok,
-       __MODULE__
-       |> join(:inner, [l], p in Booking.Permission, on: l.id == p.location_id)
-       |> where([l, p], p.user_id == ^user_id)
-       |> Repo.get(id)}
+    do: {:ok, base_query(user_id) |> Repo.get(id)}
 
   def by_id(_, _, _), do: {:ok, nil}
 

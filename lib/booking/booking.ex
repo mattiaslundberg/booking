@@ -1,7 +1,7 @@
 defmodule Booking.Booking do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Booking.Repo
+  alias Booking.{Repo, Bookable}
 
   schema "bookings" do
     field :label, :string
@@ -13,13 +13,36 @@ defmodule Booking.Booking do
     timestamps()
   end
 
-  def create(_parent, args, _resolution) do
-    %__MODULE__{} |> __MODULE__.changeset(args) |> Repo.insert()
+  def create(_parent, args, %{context: %{user_id: user_id}}) do
+    user_id
+    |> Bookable.base_query()
+    |> Repo.one()
+    |> do_create(args)
   end
 
-  def update(_parent, args = %{id: id}, _resolution) do
-    __MODULE__ |> Repo.get(id) |> __MODULE__.changeset(args) |> Repo.update()
+  def create(_, _, _), do: {:error, :denied}
+
+  defp do_create(%{id: bookable_id}, args) do
+    %__MODULE__{} |> __MODULE__.changeset(%{args | bookable_id: bookable_id}) |> Repo.insert()
   end
+
+  defp do_create(_, _), do: {:error, :denied}
+
+  def update(_parent, args = %{id: id}, %{context: %{user_id: user_id}}) do
+    bookable = user_id |> Bookable.base_query() |> Repo.one()
+
+    __MODULE__
+    |> Repo.get(id)
+    |> do_update(args, bookable)
+  end
+
+  defp do_update(booking, args, %{id: bookable_id}) do
+    booking
+    |> __MODULE__.changeset(%{args | bookable_id: bookable_id})
+    |> Repo.update()
+  end
+
+  defp do_update(_, _, _), do: {:error, :denied}
 
   @doc false
   def changeset(booking, attrs) do

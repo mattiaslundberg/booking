@@ -2,6 +2,7 @@ defmodule Booking.Bookable do
   alias Booking.Repo
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
 
   schema "bookables" do
     field :name, :string
@@ -10,6 +11,13 @@ defmodule Booking.Bookable do
     has_many :bookings, Booking.Booking
 
     timestamps()
+  end
+
+  def base_query(user_id) do
+    __MODULE__
+    |> join(:inner, [b], l in Booking.Location, on: b.location_id == l.id)
+    |> join(:inner, [b, l], p in Booking.Permission, on: l.id == p.location_id)
+    |> where([b, l, p], p.user_id == ^user_id)
   end
 
   def create(_parent, args = %{location_id: location_id}, res) do

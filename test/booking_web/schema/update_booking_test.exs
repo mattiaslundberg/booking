@@ -36,7 +36,7 @@ defmodule BookingWeb.UpdateBookingTest do
       Booking.Booking.create(
         nil,
         %{bookable_id: bookable.id, label: "First", start: now, end: now},
-        context: %{user_id: user.id}
+        %{context: %{user_id: user.id}}
       )
 
     query = """
