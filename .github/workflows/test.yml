@@ -22,7 +22,16 @@ jobs:
         with:
           otp-version: 22.3.3
           elixir-version: 1.10.3
-      - run: mix deps.get
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+          restore-keys: |
+            ${{ runner.os }}-mix-
+      - name: asdf
+        run: mix deps.get
+        if: steps.cache.outputs.cache-hit != 'true'
       - run: mix test
       - run: mix credo
       - run: mix dialyzer
@@ -35,5 +44,13 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '12.x'
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - run: npm ci --no-audit --prefix assets
+        if: steps.cache.outputs.cache-hit != 'true'
       - run: npm run deploy --prefix assets
