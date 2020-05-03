@@ -24,3 +24,16 @@ jobs:
           elixir-version: 1.10.3
       - run: mix deps.get
       - run: mix test
+      - run: mix credo
+      - run: mix dialyzer
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - run: npm ci --no-audit --prefix assets
+      - run: npm run deploy --prefix assets
