@@ -12,7 +12,9 @@ defmodule BookingWeb.Router do
 
   defp is_authenticated(_, conn), do: conn
 
-  defp send_response(conn = %{assigns: %{user_id: _id}}), do: conn
+  defp send_response(conn = %{assigns: %{user_id: id}}),
+    do: Absinthe.Plug.put_options(conn, context: %{user_id: id})
+
   defp send_response(conn), do: conn |> send_resp(403, "Not accessible") |> halt()
 
   @spec authenticate_user(Plug.Conn.t(), []) :: Plug.Conn.t()
