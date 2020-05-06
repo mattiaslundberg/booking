@@ -20,8 +20,14 @@ defmodule BookingWeb.UpdateBookingTest do
         context: %{user_id: user.id}
       })
 
+
+    {:ok, other_bookable} =
+      Bookable.create(nil, %{location_id: location.id, name: "Other"}, %{
+        context: %{user_id: user.id}
+      })
     %{
       bookable: bookable,
+      other_bookable: other_bookable,
       location: location,
       permission: permission,
       user: user,

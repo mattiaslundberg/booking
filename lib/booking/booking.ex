@@ -2,6 +2,7 @@ defmodule Booking.Booking do
   use Ecto.Schema
   import Ecto.Changeset
   alias Booking.{Repo, Bookable}
+  import Ecto.Query
 
   @moduledoc """
   A specific booking with start and end time
@@ -17,9 +18,10 @@ defmodule Booking.Booking do
     timestamps()
   end
 
-  def create(_parent, args, %{context: %{user_id: user_id}}) do
+  def create(_parent, args = %{bookable_id: bookable_id}, %{context: %{user_id: user_id}}) do
     user_id
     |> Bookable.base_query()
+    |> where([b, l, p], b.id == ^bookable_id)
     |> Repo.one()
     |> do_create(args)
   end
@@ -32,8 +34,8 @@ defmodule Booking.Booking do
 
   defp do_create(_, _), do: {:error, :denied}
 
-  def update(_parent, args = %{id: id}, %{context: %{user_id: user_id}}) do
-    bookable = user_id |> Bookable.base_query() |> Repo.one()
+  def update(_parent, args = %{id: id, bookable_id: bookable_id}, %{context: %{user_id: user_id}}) do
+    bookable = user_id |> Bookable.base_query() |> where([b, l, p], b.id == ^bookable_id) |> Repo.one()
 
     __MODULE__
     |> Repo.get(id)
