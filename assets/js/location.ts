@@ -16,42 +16,52 @@ interface Booking {
 interface Bookable {
   id: number;
   name: string;
-  bookings: Booking[],
+  bookings: Booking[];
 }
 
-const formatDate = (date: string) : string => {
+const formatDate = (date: string): string => {
   const d = new Date(date);
   return `${d.getHours()}:${d.getMinutes()}`;
 };
 
 const renderBooking = (parent: Element, { label, start, end }: Booking) => {
-  createElement('div', parent, { class: 'booking', text: `${label}: ${formatDate(start)} - ${formatDate(end)}` });
+  createElement('div', parent, {
+    class: 'booking',
+    text: `${label}: ${formatDate(start)} - ${formatDate(end)}`,
+  });
 };
 
-const toISO = (date: HTMLInputElement) : string => new Date(date.value).toISOString() ;
+const toISO = (date: HTMLInputElement): string =>
+  new Date(date.value).toISOString();
 
-const renderBookingCreate = (token: string, parent: Element, bookable: Bookable) => {
-  const form = createElement("form", parent, {});
-  const label = createElement("input", form, {
-    type: "text"
+const renderBookingCreate = (
+  token: string,
+  parent: Element,
+  bookable: Bookable,
+) => {
+  const form = createElement('form', parent, {});
+  const label = createElement('input', form, {
+    type: 'text',
   });
-  const start = createElement("input", form, {
-    type: "datetime-local"
+  const start = createElement('input', form, {
+    type: 'datetime-local',
   });
-  const end = createElement("input", form, {
-    type: "datetime-local"
+  const end = createElement('input', form, {
+    type: 'datetime-local',
   });
 
-  createElement("button", form, { text: "Add" });
-  form.addEventListener("submit", async (e) => {
+  createElement('button', form, { text: 'Add' });
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     queryGraph(
       token,
       `mutation {
-        createBooking(label: "${label.value}", start: "${toISO(start)}" end: "${toISO(end)}" bookableId: ${bookable.id}) {
+        createBooking(label: "${label.value}", start: "${toISO(
+        start,
+      )}" end: "${toISO(end)}" bookableId: ${bookable.id}) {
           label id
         }
-      }`
+      }`,
     );
   });
 };
@@ -59,16 +69,23 @@ const renderBookingCreate = (token: string, parent: Element, bookable: Bookable)
 const renderBookable = (token: string, parent: Element, bookable: Bookable) => {
   const card = createElement('div', parent, { class: 'bookable-item' });
   createElement('div', card, { class: 'label', text: bookable.name });
-  bookable.bookings.forEach(b => renderBooking(card, b));
+  bookable.bookings.forEach((b) => renderBooking(card, b));
   renderBookingCreate(token, card, bookable);
 };
 
-const renderBookables = (token: string, parent: Element, bookables: Bookable[]) => {
+const renderBookables = (
+  token: string,
+  parent: Element,
+  bookables: Bookable[],
+) => {
   const bookableGrid = createElement('div', parent, { class: 'bookable-grid' });
-  bookables.forEach(b => renderBookable(token, bookableGrid, b));
+  bookables.forEach((b) => renderBookable(token, bookableGrid, b));
 };
 
-export const queryForLocation = async (token: string, locationId: string) : Promise<Location> => {
+export const queryForLocation = async (
+  token: string,
+  locationId: string,
+): Promise<Location> => {
   const locationData = await queryGraph(
     token,
     `query { location(id: ${locationId}) { name bookables { id name bookings { id label start end } } } }`,
