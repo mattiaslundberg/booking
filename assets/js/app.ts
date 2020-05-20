@@ -50,7 +50,7 @@ const renderApp = async (parent: Element, token: string) => {
 
 const maybeDoLogin = async (
   container: Element,
-  token?: string,
+  token: string | null,
 ): Promise<string> => {
   if (!token) {
     token = await renderLogin(container);
@@ -61,6 +61,9 @@ const maybeDoLogin = async (
 
 const main = async () => {
   const container = document.getElementById('app-container');
+  if (!container) {
+    return;
+  }
   const token = getToken();
   const newToken = await maybeDoLogin(container, token);
   renderApp(container, newToken);
